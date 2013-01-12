@@ -1,0 +1,3 @@
+db-name: minecraft
+collection-name: players
+enable-registration: true
