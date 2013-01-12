@@ -43,6 +43,9 @@ public final class McMongoAuth extends JavaPlugin {
 	
 	@Override
 	public void onEnable(){
+		if (!getServer().getOnlineMode()) {
+			this.setEnabled(false);
+		}
 		this.saveDefaultConfig();
 		sm = new SessionsManager();
 		FileConfiguration config = this.getConfig();
