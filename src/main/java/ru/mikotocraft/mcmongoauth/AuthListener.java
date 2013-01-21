@@ -17,6 +17,7 @@
 package ru.mikotocraft.mcmongoauth;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,20 +41,46 @@ public class AuthListener implements Listener {
 		db = _db;
 	}
 	
-	@EventHandler
+	private Location findSolidGround(Player player) {
+		Location loc = player.getLocation();
+		int y = loc.getBlockY();
+		
+		while (true) {
+			loc.setY(y);
+			plugin.getLogger().info(String.valueOf(loc.getBlock().getType().getId()));
+			if (loc.getBlock().getType().getId() == 0) {
+				y = y - 1;
+				continue;
+			} else {
+				return loc;
+			}
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.HIGH)
 	public void onPlayerJoin(PlayerLoginEvent event) {
 		Player player = event.getPlayer();
-		boolean access = db.checkAccess(player.getPlayerListName());
-		if (access) {
-			player.sendMessage(ChatColor.RED + "Please, log in");
-			return;
-		} else {
-			if (config.getString("enable-registration").equals("true")) {
+		String playername = player.getPlayerListName().toLowerCase();
+		Location safe = findSolidGround(player);
+		plugin.getLogger().info(player.getLocation().toString());
+		plugin.getLogger().info(safe.toString());
+		player.teleport(safe);
+		if (config.getString("enable-whitelist").equals("false")) {
+			if (db.doExist(playername)) {
+				player.sendMessage("Please, log in");
+				return;
+			} else {
 				player.sendMessage(ChatColor.RED + "Please, register");
 				return;
 			}
-			player.kickPlayer("You don't have the access to this server");
-			return;
+		} else {
+			if (db.checkAccess(playername)) {
+				player.sendMessage(ChatColor.RED + "Please, login");
+				return;
+			} else {
+				player.kickPlayer("Not on whitelist");
+				return;
+			}
 		}
 	}
 	

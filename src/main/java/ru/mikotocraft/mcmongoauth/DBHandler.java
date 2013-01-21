@@ -19,7 +19,6 @@ package ru.mikotocraft.mcmongoauth;
 
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -35,10 +34,11 @@ public class DBHandler {
 	private DBCollection players;
 	private MessageDigest md;
 	
-	public DBHandler(String dbname, String collectionname){
+	public DBHandler(String dbname, String collectionname) {
 		try {
+			md = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException e) {}
 		this.openConnection(dbname, collectionname);
-		} catch (UnknownHostException e) {}
 	}
 	
 	public boolean changePassword(String playername, String old_password, String new_password) {
@@ -67,16 +67,11 @@ public class DBHandler {
 		}
 	}
 	
-	private void openConnection(String dbname, String collectionname) throws UnknownHostException{
-		try {
-			md = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException e) {}
-		
+	private void openConnection(String dbname, String collectionname) {
 		try {
 			mongoClient = new MongoClient("127.0.0.1", 27017);
-		} catch (UnknownHostException e) {
-			throw new UnknownHostException();
-		}
+		} catch (UnknownHostException e) {}
+		mongoClient.getDatabaseNames();
 		db = mongoClient.getDB(dbname);
 		players = db.getCollection(collectionname);
 	}
@@ -87,15 +82,19 @@ public class DBHandler {
 	} catch (Exception e) {}
 	}
 	
-	private String encryptPassword(String password) throws UnsupportedEncodingException {
-		byte[] hash = md.digest(password.getBytes("UTF-8"));
-		StringBuffer pass = new StringBuffer();
-		for (int i = 0; i < hash.length; i++) {
-			String hex = Integer.toHexString(0xff & hash[i]);
-			if(hex.length() == 1) pass.append('0');
-			pass.append(hex);
+	private String encryptPassword(String password){
+		try {
+			byte[] hash = md.digest(password.getBytes("UTF-8"));
+			StringBuffer pass = new StringBuffer();
+			for (int i = 0; i < hash.length; i++) {
+				String hex = Integer.toHexString(0xff & hash[i]);
+				if(hex.length() == 1) pass.append('0');
+				pass.append(hex);
+			}
+			return pass.toString();
+		} catch (UnsupportedEncodingException e) {
+			return null;
 		}
-		return pass.toString();
 	}
 	
 	public boolean checkAccess(String playername) {
@@ -122,38 +121,56 @@ public class DBHandler {
 	}
 	
 	public void registerPlayer(String playername, String plain_password) {
-		try {
-			String password = this.encryptPassword(plain_password);
-			BasicDBObject query = new BasicDBObject();
-			query.put("playername", playername);
-			
-			if (players.findOne(query) == null) {
-				BasicDBObject player = new BasicDBObject();
-				player.put("playername", playername);
-				player.put("password", password);
-				player.put("allowed", true);
-				players.insert(player);
-				return;
-			} else { 
-				return;
-			}
-		} catch (Exception e) {
+		String password = this.encryptPassword(plain_password);
+		BasicDBObject query = new BasicDBObject();
+		query.put("playername", playername);
+		
+		if (players.findOne(query) == null) {
+			BasicDBObject player = new BasicDBObject();
+			player.put("playername", playername);
+			player.put("password", password);
+			player.put("allowed", true);
+			players.insert(player);
+			return;
+		} else { 
 			return;
 		}
 	}
 	
 	public boolean checkAuth(String playername, String plain_password) {
+		String password = this.encryptPassword(plain_password);
+		BasicDBObject query = new BasicDBObject();
+		query.put("playername", playername);	
+		DBObject player = players.findOne(query);
 		try {
-			String password = this.encryptPassword(plain_password);
-			BasicDBObject query = new BasicDBObject();
-			query.put("playername", playername);	
-			DBObject player = players.findOne(query);
-			if (password.equals(player.get("password"))) {
+			boolean auth = password.equals(player.get("password"));
+			if (auth) {
 				return true;
 			} else {
 				return false;
 			}
-		} catch (Exception e) {
+		} catch (NullPointerException e) {
+			return false;
+		}
+	}
+	public void deletePlayer(String playername) {
+		BasicDBObject query = new BasicDBObject().append("playername", playername);
+		players.remove(query);
+		
+	}
+	
+	public void modPassword(String playername, String plain_password) {
+		String password = this.encryptPassword(plain_password);
+		BasicDBObject query = new BasicDBObject().append("playername", playername);
+		BasicDBObject update = new BasicDBObject().append("$set", new BasicDBObject().append("password", password));
+		players.update(query, update);
+	}
+
+	public boolean doExist(String playername) {
+		BasicDBObject query = new BasicDBObject().append("playername", playername);
+		if (players.findOne(query) != null) {
+			return true;
+		} else {
 			return false;
 		}
 	}

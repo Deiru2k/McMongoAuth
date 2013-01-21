@@ -44,17 +44,21 @@ public class Register implements CommandExecutor {
 			sender.sendMessage("Only players can do this");
 			return false;
 		}
-		Player player = (Player) sender;
-		String playername = player.getPlayerListName().toLowerCase();
-		try {
-			String password = args[0];
-			db.registerPlayer(playername, password);
-			sm.addSession(playername);
-			plugin.getLogger().info("Registered new player: " + playername + '.');
-			player.sendMessage(ChatColor.GREEN + "You are now registered!");
-			return true;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			player.sendMessage(ChatColor.GREEN + "Missing password.");
+		if (sender.hasPermission("mongoauth.user")) {
+			Player player = (Player) sender;
+			String playername = player.getPlayerListName().toLowerCase();
+			try {
+				String password = args[0];
+				db.registerPlayer(playername, password);
+				sm.addSession(playername);
+				plugin.getLogger().info("Registered new player: " + playername + '.');
+				player.sendMessage(ChatColor.GREEN + "You are now registered!");
+				return true;
+			} catch (ArrayIndexOutOfBoundsException e) {
+				player.sendMessage(ChatColor.GREEN + "Missing password.");
+				return false;
+			}
+		} else {
 			return false;
 		}
 	}

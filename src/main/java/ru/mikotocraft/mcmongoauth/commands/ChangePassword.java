@@ -40,22 +40,25 @@ public class ChangePassword implements CommandExecutor {
 			sender.sendMessage("Only players can do this");
 			return false;
 		}
-		Player player = (Player) sender;
-		String playername = player.getPlayerListName().toLowerCase();
-		try {
-			String password = args[0];
-			String new_password = args[1];
-			if (db.changePassword(playername, password, new_password)) {
-				plugin.getLogger().info("Player " + playername + " has changed password.");
-				player.sendMessage(ChatColor.GREEN + "Successfully changed your password");
-				return true;
-			} else {
-				player.sendMessage(ChatColor.RED + "Wrong password.");
+		if (sender.hasPermission("mongoauth.user")) {
+			Player player = (Player) sender;
+			String playername = player.getPlayerListName().toLowerCase();
+			try {
+				String password = args[0];
+				String new_password = args[1];
+				if (db.changePassword(playername, password, new_password)) {
+					plugin.getLogger().info("Player " + playername + " has changed password.");
+					player.sendMessage(ChatColor.GREEN + "Successfully changed your password");
+					return true;
+				} else {
+					player.sendMessage(ChatColor.RED + "Wrong password.");
+					return false;
+				}
+			} catch (Exception e) {
 				return false;
 			}
-		} catch (Exception e) {
+		} else {
 			return false;
 		}
-	}
-	
+	}	
 }

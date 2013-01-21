@@ -4,7 +4,7 @@
   <groupId>ru.mikotocraft</groupId>
   <artifactId>McMongoAuth</artifactId>
   <name>McMongoAuth</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <build>
     <plugins>
       <plugin>
@@ -38,7 +38,7 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.4.5-R0.2</version>
+      <version>1.4.7-R0.1</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

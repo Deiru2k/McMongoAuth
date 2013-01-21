@@ -1,19 +1,43 @@
 name: McMongoAuth
 main: ru.mikotocraft.mcmongoauth.McMongoAuth
-version: 1.0
+version: 1.1
 commands:
    login:
       description: Command used to login to server
       usage: /login [password]
+      permission: mongoauth.user
+      permission-message: You don't have access to this command
    logout:
       description: Command used to logout of server
       usage: /logout
+      permission: mongoauth.user
+      permission-message: You don't have access to this command
    register:
       description: Command used to register with the server
       usage: /register [password]
+      permission: mongoauth.user
+      permission-message: You don't have access to this command
    unregister:
       description: Command used to unregsiter with the server
       usage: /unregister [password]
+      permission: mongoauth.user
+      permission-message: You don't have access to this command
    changepass:
       description: Command used to change password
       usage: /changepass [old password] [new password]
+      permission: mongoauth.user
+      permission-message: You don't have access to this command
+   authadmin:
+      description: Command used to manage player's account
+      usage: /admin [unregister|changepass] [playername] (newpassword)
+      permission: mongoauth.admin
+      permission-message: You don't have access to this command
+permissions:
+   mongoauth.admin:
+      description: Gives an admin access
+      default: op
+      children:
+         mongoauth.user: true
+   mongoauth.user:
+      description: Allows the use of plugin to players
+      default: false

@@ -42,17 +42,20 @@ public class LogOut implements CommandExecutor {
 			sender.sendMessage("Only players can do this");
 			return false;
 		}
-		Player player = (Player) sender;
-		String playername = player.getPlayerListName().toLowerCase();
-		if (sm.checkSessions(playername)) {
-			sm.removeSession(playername);
-			plugin.getLogger().info("Player " + playername + " logger out.");
-			player.sendMessage(ChatColor.GREEN + "Logged you out.");
-			return true;
+		if (sender.hasPermission("mongoauth.user")) {
+			Player player = (Player) sender;
+			String playername = player.getPlayerListName().toLowerCase();
+			if (sm.checkSessions(playername)) {
+				sm.removeSession(playername);
+				plugin.getLogger().info("Player " + playername + " logger out.");
+				player.sendMessage(ChatColor.GREEN + "Logged you out.");
+				return true;
+			} else {
+				player.sendMessage(ChatColor.GREEN + "You are not logged in.");
+				return false;
+			}
 		} else {
-			player.sendMessage(ChatColor.GREEN + "You are not logged in.");
 			return false;
 		}
 	}
-
 }

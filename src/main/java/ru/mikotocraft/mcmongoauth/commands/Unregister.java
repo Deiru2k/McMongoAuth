@@ -44,16 +44,25 @@ public class Unregister implements CommandExecutor {
 			sender.sendMessage("Only players can do this");
 			return false;
 		}
-		Player player = (Player) sender;
-		String playername = player.getPlayerListName().toLowerCase();
-		String password = args[0];
-		if (db.unregisterPlayer(playername, password)) {
-			sm.removeSession(playername);
-			player.sendMessage(ChatColor.GREEN + "Successfully unregistered.");
-			plugin.getLogger().info("Player " + playername + " unregistered.");
-			return true;
+		if (sender.hasPermission("mongoauth.user")) {
+			Player player = (Player) sender;
+			String playername = player.getPlayerListName().toLowerCase();
+			try {
+				String password = args[0];
+				if (db.unregisterPlayer(playername, password)) {
+					sm.removeSession(playername);
+					player.sendMessage(ChatColor.GREEN + "Successfully unregistered.");
+					plugin.getLogger().info("Player " + playername + " unregistered.");
+					return true;
+				} else {
+					player.sendMessage(ChatColor.RED + "Wrong password.");
+					return false;
+				}
+			} catch (ArrayIndexOutOfBoundsException e) {
+				player.sendMessage(ChatColor.RED + "Missing password.");
+				return false;
+			}
 		} else {
-			player.sendMessage(ChatColor.RED + "Wrong password.");
 			return false;
 		}
 	}

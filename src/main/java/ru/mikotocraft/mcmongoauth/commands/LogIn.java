@@ -46,24 +46,28 @@ public class LogIn implements CommandExecutor {
 			sender.sendMessage("Only players can do this");
 			return false;
 		}
-		try {
-			String password = args[0];
-			String playername = player.getPlayerListName().toLowerCase();
-			if (!sm.checkSessions(playername)) {
-				if (db.checkAuth(playername, password)) {
-					sm.addSession(playername);
-					player.sendMessage(ChatColor.GREEN + "You are now logged in!");
-					plugin.getLogger().info("Player " + playername + " logged in.");
-					return true;
+		if (sender.hasPermission("mongoauth.user")) {
+			try {
+				String password = args[0];
+				String playername = player.getPlayerListName().toLowerCase();
+				if (!sm.checkSessions(playername)) {
+					if (db.checkAuth(playername, password)) {
+						sm.addSession(playername);
+						player.sendMessage(ChatColor.GREEN + "You are now logged in!");
+						plugin.getLogger().info("Player " + playername + " logged in.");
+						return true;
+					} else {
+						player.sendMessage(ChatColor.RED + "Wrong password, or no such player.");
+						return false;
+					}
 				} else {
-					player.sendMessage(ChatColor.RED + "Wrong password, or no such player.");
-					return false;
+						player.sendMessage(ChatColor.GREEN + "You are allready logged in.");
+						return true;
 				}
-			} else {
-					player.sendMessage(ChatColor.GREEN + "You are allready logged in.");
-					return true;
+			} catch (ArrayIndexOutOfBoundsException e) {
+				return false;
 			}
-		} catch (ArrayIndexOutOfBoundsException e) {
+		} else {
 			return false;
 		}
 	}
