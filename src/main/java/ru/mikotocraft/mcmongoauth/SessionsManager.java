@@ -29,25 +29,15 @@ public class SessionsManager {
 	public void addSession(String playername) {
 		if (!sessions.contains(playername)) {
 			sessions.add(playername);
-			return;
-		} else {
-			return;
 		}
 	}
 	
 	public void removeSession(String playername) {
 		if (sessions.contains(playername)) {
 			sessions.remove(playername);
-			return;
-		} else {
-			return;
-		}
+        }
 	}
 	public boolean checkSessions(String playername) {
-		if (sessions.contains(playername)) {
-			return true;
-		} else {
-			return false;
-		}
+        return sessions.contains(playername);
 	}
 }

@@ -17,9 +17,6 @@
 
 package ru.mikotocraft.mcmongoauth;
 
-import ru.mikotocraft.mcmongoauth.AuthListener;
-import ru.mikotocraft.mcmongoauth.DBHandler;
-import ru.mikotocraft.mcmongoauth.SessionsManager;
 import ru.mikotocraft.mcmongoauth.commands.Admin;
 import ru.mikotocraft.mcmongoauth.commands.ChangePassword;
 import ru.mikotocraft.mcmongoauth.commands.LogIn;
@@ -32,14 +29,11 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class McMongoAuth extends JavaPlugin {
-	
-	private String dbname;
-	private String collectionname;
-	private DBHandler db;
-	private SessionsManager sm;
 
-	
-	@Override
+    private DBHandler db;
+
+
+    @Override
 	public void onEnable(){
 		/* if (!getServer().getOnlineMode()) {
 			this.getLogger().warning("Server is in offline-mode. Disabling plugin");
@@ -48,8 +42,8 @@ public final class McMongoAuth extends JavaPlugin {
 		} */
 		this.saveDefaultConfig();
 		FileConfiguration config = this.getConfig();
-		dbname = config.getString("db-name");
-		collectionname = config.getString("collection-name");
+        String dbname = config.getString("db-name");
+        String collectionname = config.getString("collection-name");
 		try {
 			db = new DBHandler(dbname, collectionname);
 		} catch (Exception e) {
@@ -57,7 +51,7 @@ public final class McMongoAuth extends JavaPlugin {
 			this.setEnabled(false);
 			return;
 		}
-		sm = new SessionsManager();
+        SessionsManager sm = new SessionsManager();
 		PluginManager pm = getServer().getPluginManager();
 		getCommand("login").setExecutor(new LogIn(this, db, sm));
 		getCommand("logout").setExecutor(new LogOut(this, sm));
@@ -69,10 +63,6 @@ public final class McMongoAuth extends JavaPlugin {
 	}
 	@Override
 	public void onDisable() {
-		if (!this.isEnabled()) {
-			return;
-		} else {
-			db.closeConnection();
-		}
+		if (this.isEnabled()) db.closeConnection();
 	}
 }

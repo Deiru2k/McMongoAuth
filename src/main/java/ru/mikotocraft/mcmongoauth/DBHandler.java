@@ -30,14 +30,13 @@ import com.mongodb.DBObject;
 
 public class DBHandler {
 	private MongoClient mongoClient;
-	private DB db;
-	private DBCollection players;
+    private DBCollection players;
 	private MessageDigest md;
 	
 	public DBHandler(String dbname, String collectionname) {
 		try {
 			md = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException e) {}
+		} catch (NoSuchAlgorithmException ignored) {}
 		this.openConnection(dbname, collectionname);
 	}
 	
@@ -70,27 +69,27 @@ public class DBHandler {
 	private void openConnection(String dbname, String collectionname) {
 		try {
 			mongoClient = new MongoClient("127.0.0.1", 27017);
-		} catch (UnknownHostException e) {}
+		} catch (UnknownHostException ignored) {}
 		mongoClient.getDatabaseNames();
-		db = mongoClient.getDB(dbname);
+        DB db = mongoClient.getDB(dbname);
 		players = db.getCollection(collectionname);
 	}
 	
 	public void closeConnection(){
 	try {
 		mongoClient.close();
-	} catch (Exception e) {}
+	} catch (Exception ignored) {}
 	}
 	
 	private String encryptPassword(String password){
 		try {
 			byte[] hash = md.digest(password.getBytes("UTF-8"));
-			StringBuffer pass = new StringBuffer();
-			for (int i = 0; i < hash.length; i++) {
-				String hex = Integer.toHexString(0xff & hash[i]);
-				if(hex.length() == 1) pass.append('0');
-				pass.append(hex);
-			}
+			StringBuilder pass = new StringBuilder();
+            for (byte aHash : hash) {
+                String hex = Integer.toHexString(0xff & aHash);
+                if (hex.length() == 1) pass.append('0');
+                pass.append(hex);
+            }
 			return pass.toString();
 		} catch (UnsupportedEncodingException e) {
 			return null;
@@ -101,23 +100,17 @@ public class DBHandler {
 		BasicDBObject query = new BasicDBObject();
 		query.put("playername", playername.toLowerCase());
 		DBObject player = players.findOne(query);
-		if (player == null) return false;
-		boolean result = (Boolean) player.get("allowed"); 
-		if(result){
-			return true;
-		} else {
-			return false;
-		}
+		if (player == null) {
+            return false;
+        }
+        return (Boolean) player.get("allowed");
 	}
 	
-	public boolean checkInventory(String playername) {
+	@SuppressWarnings("UnusedDeclaration")
+    public boolean checkInventory(String playername) {
 		BasicDBObject query = new BasicDBObject().append("playername", playername);
 		DBObject player = players.findOne(query);
-		if (player.get("inventory") == null) {
-			return false;
-		} else {
-			return true;
-		}
+        return player.get("inventory") != null;
 	}
 	
 	public void registerPlayer(String playername, String plain_password) {
@@ -131,10 +124,7 @@ public class DBHandler {
 			player.put("password", password);
 			player.put("allowed", true);
 			players.insert(player);
-			return;
-		} else { 
-			return;
-		}
+        }
 	}
 	
 	public boolean checkAuth(String playername, String plain_password) {
@@ -143,12 +133,7 @@ public class DBHandler {
 		query.put("playername", playername);	
 		DBObject player = players.findOne(query);
 		try {
-			boolean auth = password.equals(player.get("password"));
-			if (auth) {
-				return true;
-			} else {
-				return false;
-			}
+            return password.equals(player.get("password"));
 		} catch (NullPointerException e) {
 			return false;
 		}
@@ -168,10 +153,6 @@ public class DBHandler {
 
 	public boolean doExist(String playername) {
 		BasicDBObject query = new BasicDBObject().append("playername", playername);
-		if (players.findOne(query) != null) {
-			return true;
-		} else {
-			return false;
-		}
+        return players.findOne(query) != null;
 	}
 }

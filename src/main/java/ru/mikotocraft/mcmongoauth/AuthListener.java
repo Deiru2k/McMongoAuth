@@ -25,8 +25,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 
-import ru.mikotocraft.mcmongoauth.DBHandler;
-import ru.mikotocraft.mcmongoauth.SessionsManager;
 
 public class AuthListener implements Listener {
 	private DBHandler db;
@@ -50,7 +48,6 @@ public class AuthListener implements Listener {
 			plugin.getLogger().info(String.valueOf(loc.getBlock().getType().getId()));
 			if (loc.getBlock().getType().getId() == 0) {
 				y = y - 1;
-				continue;
 			} else {
 				return loc;
 			}
@@ -68,18 +65,14 @@ public class AuthListener implements Listener {
 		if (config.getString("enable-whitelist").equals("false")) {
 			if (db.doExist(playername)) {
 				player.sendMessage("Please, log in");
-				return;
 			} else {
 				player.sendMessage(ChatColor.RED + "Please, register");
-				return;
 			}
 		} else {
 			if (db.checkAccess(playername)) {
 				player.sendMessage(ChatColor.RED + "Please, login");
-				return;
 			} else {
 				player.kickPlayer("Not on whitelist");
-				return;
 			}
 		}
 	}
@@ -157,7 +150,6 @@ public class AuthListener implements Listener {
 		if (sm.checkSessions(playername)) {
 			sm.removeSession(playername);
 			plugin.getLogger().info("Player " + playername + " logged out.");
-			return;
 		}
 	}
 }
